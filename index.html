@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CDEJEPH</title>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
+body{
+height:100vh;
+background:linear-gradient(135deg,#87CEEB,#ffffff);
+display:flex;
+justify-content:center;
+align-items:center;
+}
+.container{width:100%;height:100vh;display:flex;flex-direction:column}
+.header{
+background:white;
+padding:15px 25px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
+.logo{width:50px}
+.content{
+flex:1;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:20px;
+}
+.card{
+background:white;
+width:100%;
+max-width:500px;
+padding:35px;
+border-radius:20px;
+box-shadow:0 15px 40px rgba(0,0,0,0.2);
+animation:fade 0.5s ease;
+}
+@keyframes fade{
+from{opacity:0;transform:translateY(20px)}
+to{opacity:1;transform:translateY(0)}
+}
+input{
+width:100%;
+padding:12px;
+margin-bottom:12px;
+border-radius:10px;
+border:1px solid #ccc;
+}
+button{
+width:100%;
+padding:12px;
+border:none;
+border-radius:10px;
+background:#87CEEB;
+color:white;
+font-size:16px;
+margin-top:10px;
+cursor:pointer;
+transition:0.3s;
+}
+button:hover{background:#0077b6}
+.hidden{display:none}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="login" class="content">
+<div class="card">
+<img src="logo.png" style="width:120px;display:block;margin:auto;margin-bottom:20px;">
+<h2 style="text-align:center;color:#0077b6;">Connexion</h2>
+<input type="password" id="pass" placeholder="Mot de passe">
+<button onclick="login()">Entrer</button>
+</div>
+</div>
+
+<!-- MENU -->
+<div id="menu" class="hidden container">
+<div class="header">
+<h2 style="color:#0077b6;">CDEJEPH</h2>
+<img src="logo.png" class="logo">
+</div>
+<div class="content">
+<div class="card">
+<button onclick="show('add')">Ajouter Personne</button>
+<button onclick="show('presence')">Marquer Présence</button>
+<button onclick="show('list')">Voir Présents</button>
+<button onclick="logout()">Déconnexion</button>
+</div>
+</div>
+</div>
+
+<!-- AJOUT -->
+<div id="add" class="hidden container">
+<div class="header">
+<h2>Ajouter</h2>
+<img src="logo.png" class="logo">
+</div>
+<div class="content">
+<div class="card">
+<input id="nom" placeholder="Nom">
+<input id="prenom" placeholder="Prénom">
+<input id="age" placeholder="Age">
+<input id="ecole" placeholder="Ecole">
+<input id="classe" placeholder="Classe">
+<input id="parents" placeholder="Numéro Parents">
+<input id="tg" placeholder="Numéro TG">
+<input id="metier" placeholder="Métier avenir">
+<button onclick="savePerson()">Enregistrer</button>
+<button onclick="back()">Retour</button>
+</div>
+</div>
+</div>
+
+<!-- PRESENCE -->
+<div id="presence" class="hidden container">
+<div class="header">
+<h2>Présence</h2>
+<img src="logo.png" class="logo">
+</div>
+<div class="content">
+<div class="card">
+<input id="searchNom" placeholder="Recherche Nom">
+<input id="searchTG" placeholder="Recherche Numéro TG">
+<button onclick="markPresence()">Valider Présence</button>
+<button onclick="back()">Retour</button>
+</div>
+</div>
+</div>
+
+<!-- LISTE -->
+<div id="list" class="hidden container">
+<div class="header">
+<h2>Présents du jour</h2>
+<img src="logo.png" class="logo">
+</div>
+<div class="content">
+<div class="card">
+<div id="result"></div>
+<button onclick="downloadCSV()">Télécharger CSV</button>
+<button onclick="back()">Retour</button>
+</div>
+</div>
+</div>
+
+<script>
+
+// 🔥 REMPLACE PAR TES INFOS FIREBASE
+var firebaseConfig = {
+apiKey: "AIzaSyCqdm2lbOtt5VOo6OcH2LV0ep3ZcxQiFGs",
+authDomain: "cdej-47315.firebaseapp.com",
+projectId: "cdej-47315"
+};
+
+firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
+
+// LOGIN
+function login(){
+if(document.getElementById("pass").value==="CDEJEPH"){
+document.getElementById("login").classList.add("hidden");
+document.getElementById("menu").classList.remove("hidden");
+}else{
+alert("Mot de passe incorrect");
+}
+}
+
+function logout(){
+document.getElementById("menu").classList.add("hidden");
+document.getElementById("login").classList.remove("hidden");
+}
+
+function show(id){
+document.getElementById("menu").classList.add("hidden");
+document.getElementById(id).classList.remove("hidden");
+if(id==="list"){loadToday();}
+}
+
+function back(){
+document.getElementById("add").classList.add("hidden");
+document.getElementById("presence").classList.add("hidden");
+document.getElementById("list").classList.add("hidden");
+document.getElementById("menu").classList.remove("hidden");
+}
+
+// AJOUT
+function savePerson(){
+db.collection("personnes").add({
+nom:nom.value,
+prenom:prenom.value,
+age:age.value,
+ecole:ecole.value,
+classe:classe.value,
+parents:parents.value,
+tg:tg.value,
+metier:metier.value
+});
+alert("Enregistré");
+}
+
+// PRESENCE
+function markPresence(){
+let nomVal=searchNom.value;
+let tgVal=searchTG.value;
+
+db.collection("personnes")
+.where("nom","==",nomVal)
+.get()
+.then(snapshot=>{
+if(snapshot.empty){
+db.collection("personnes")
+.where("tg","==",tgVal)
+.get()
+.then(snap=>{
+snap.forEach(doc=>savePresence(doc.data()));
+});
+}else{
+snapshot.forEach(doc=>savePresence(doc.data()));
+}
+});
+}
+
+function savePresence(data){
+let now=new Date();
+db.collection("presences").add({
+nom:data.nom+" "+data.prenom,
+date:now.toLocaleDateString(),
+heure:now.toLocaleTimeString()
+});
+alert("Présence enregistrée");
+}
+
+// LISTE
+function loadToday(){
+let today=new Date().toLocaleDateString();
+result.innerHTML="";
+db.collection("presences")
+.where("date","==",today)
+.get()
+.then(snapshot=>{
+snapshot.forEach(doc=>{
+let d=doc.data();
+result.innerHTML+=`<p>${d.nom} - ${d.heure}</p>`;
+});
+});
+}
+
+// TELECHARGEMENT
+function downloadCSV(){
+let today=new Date().toLocaleDateString();
+db.collection("presences")
+.where("date","==",today)
+.get()
+.then(snapshot=>{
+let csv="Nom,Heure\n";
+snapshot.forEach(doc=>{
+let d=doc.data();
+csv+=d.nom+","+d.heure+"\n";
+});
+let blob=new Blob([csv],{type:"text/csv"});
+let link=document.createElement("a");
+link.href=URL.createObjectURL(blob);
+link.download="presence_"+today+".csv";
+link.click();
+});
+}
+
+</script>
+
+</body>
+</html>
