@@ -4,29 +4,60 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CDEJEPH</title>
-
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<!-- jsPDF + AutoTable -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.3/jspdf.plugin.autotable.min.js"></script>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
 body{
 height:100vh;
-background:linear-gradient(135deg,#87CEEB,#ffffff);
+background:linear-gradient(135deg,#87CEEB,#E0F7FA,#ffffff);
 display:flex;
 justify-content:center;
 align-items:center;
+overflow:hidden;
+position:relative;
+}
+body::before{
+content:'';
+position:absolute;
+top:0;left:0;right:0;bottom:0;
+background:radial-gradient(circle at 20% 80%, rgba(120,219,255,0.3) 0%, transparent 50%),
+radial-gradient(circle at 80% 20%, rgba(255,255,255,0.3) 0%, transparent 50%);
+animation: float 20s ease-in-out infinite;
+}
+@keyframes float{
+0%,100%{transform:translateY(0) rotate(0deg);}
+50%{transform:translateY(-20px) rotate(2deg);}
 }
 .container{width:100%;height:100vh;display:flex;flex-direction:column}
 .header{
-background:white;
+background:linear-gradient(135deg,#ffffff, #f8f9ff);
 padding:15px 25px;
 display:flex;
 justify-content:space-between;
 align-items:center;
-box-shadow:0 5px 15px rgba(0,0,0,0.1);
+box-shadow:0 8px 32px rgba(135,206,235,0.3);
+backdrop-filter:blur(10px);
+border-bottom:1px solid rgba(255,255,255,0.2);
+transition:all 0.3s ease;
 }
-.logo{width:50px}
+.header:hover{box-shadow:0 12px 40px rgba(135,206,235,0.4);}
+.logo{
+width:50px;
+height:50px;
+border-radius:15px;
+object-fit:cover;
+transition:transform 0.3s ease, box-shadow 0.3s ease;
+box-shadow:0 4px 15px rgba(135,206,235,0.4);
+}
+.logo:hover{
+transform:scale(1.1) rotate(5deg);
+box-shadow:0 8px 25px rgba(135,206,235,0.6);
+}
 .content{
 flex:1;
 display:flex;
@@ -35,49 +66,136 @@ align-items:center;
 padding:20px;
 }
 .card{
-background:white;
+background:linear-gradient(145deg,#ffffff, #f8f9ff);
 width:100%;
 max-width:500px;
-padding:35px;
-border-radius:20px;
-box-shadow:0 15px 40px rgba(0,0,0,0.2);
-animation:fade 0.5s ease;
+padding:40px;
+border-radius:25px;
+box-shadow:0 20px 60px rgba(135,206,235,0.4), 0 0 0 1px rgba(255,255,255,0.5);
+backdrop-filter:blur(20px);
+transition:all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+position:relative;
+overflow:hidden;
 }
-@keyframes fade{
-from{opacity:0;transform:translateY(20px)}
-to{opacity:1;transform:translateY(0)}
+.card::before{
+content:'';
+position:absolute;
+top:0;left:0;right:0;height:4px;
+background:linear-gradient(90deg,#87CEEB,#0077b6,#87CEEB);
+animation: shimmer 3s infinite;
+}
+@keyframes shimmer{
+0%{transform:translateX(-100%);}
+100%{transform:translateX(100%);}
+}
+.card:hover{
+transform:translateY(-10px);
+box-shadow:0 30px 80px rgba(135,206,235,0.6);
 }
 input{
 width:100%;
-padding:12px;
-margin-bottom:12px;
-border-radius:10px;
-border:1px solid #ccc;
+padding:15px 20px;
+margin-bottom:15px;
+border-radius:15px;
+border:2px solid transparent;
+background:linear-gradient(145deg,#ffffff, #f0f8ff);
+transition:all 0.3s ease;
+font-size:16px;
 }
+input:focus{
+outline:none;
+border-color:#87CEEB;
+box-shadow:0 0 0 4px rgba(135,206,235,0.2);
+transform:translateY(-2px);
+}
+input:valid{ border-color:#4CAF50; }
 button{
 width:100%;
-padding:12px;
+padding:15px 20px;
 border:none;
-border-radius:10px;
-background:#87CEEB;
+border-radius:15px;
+background:linear-gradient(135deg,#87CEEB,#0077b6);
 color:white;
 font-size:16px;
-margin-top:10px;
+font-weight:600;
+margin-top:15px;
 cursor:pointer;
-transition:0.3s;
+transition:all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+position:relative;
+overflow:hidden;
 }
-button:hover{background:#0077b6}
+button::before{
+content:'';
+position:absolute;
+top:0;left:-100%;width:100%;height:100%;
+background:linear-gradient(90deg,transparent, rgba(255,255,255,0.3),transparent);
+transition:left 0.5s;
+}
+button:hover::before{left:100%;}
+button:hover{
+transform:translateY(-3px);
+box-shadow:0 15px 40px rgba(135,206,235,0.6);
+}
+button:active{transform:translateY(-1px);}
 .hidden{display:none}
+.personItem{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:12px;
+padding:15px 20px;
+border:2px solid transparent;
+border-radius:15px;
+background:linear-gradient(145deg,#ffffff, #f8f9ff);
+transition:all 0.3s ease;
+cursor:pointer;
+}
+.personItem:hover{
+border-color:#87CEEB;
+transform:translateX(5px);
+box-shadow:0 10px 30px rgba(135,206,235,0.3);
+}
+.logo-login{
+width:120px;
+height:120px;
+border-radius:25px;
+object-fit:cover;
+margin:0 auto 25px;
+display:block;
+box-shadow:0 15px 40px rgba(135,206,235,0.5);
+transition:transform 0.4s ease, box-shadow 0.4s ease;
+}
+.logo-login:hover{
+transform:scale(1.05) rotate(2deg);
+box-shadow:0 25px 60px rgba(135,206,235,0.7);
+}
+.date-field {
+    padding: 14px;
+    border-radius: 15px;
+    border: 2px solid #87CEEB;
+    background: #f0f8ff;
+    font-size: 16px;
+    margin: 15px 0;
+    width: 100%;
+}
+
+/* Ajouts pour la gestion */
+.button-group { display: flex; gap: 12px; margin-top: 20px; }
+.button-group button { flex: 1; }
+.delete-btn { background: linear-gradient(135deg, #f44336, #d32f2f) !important; }
+.edit-btn   { background: linear-gradient(135deg, #ff9800, #f57c00) !important; }
 </style>
 </head>
-
 <body>
 
 <!-- LOGIN -->
 <div id="login" class="content">
 <div class="card">
-<img src="logo.png" style="width:120px;display:block;margin:auto;margin-bottom:20px;">
-<h2 style="text-align:center;color:#0077b6;">Connexion</h2>
+<div style="text-align:center;margin-bottom:30px;">
+<img src="logo.png" alt="CDEJEPH Logo" class="logo-login">
+<h2 style="color:#0077b6;font-size:28px;margin-bottom:10px;">Bienvenue</h2>
+<p style="color:#666;font-size:14px;">Entrez le mot de passe pour continuer</p>
+</div>
 <input type="password" id="pass" placeholder="Mot de passe">
 <button onclick="login()">Entrer</button>
 </div>
@@ -86,15 +204,16 @@ button:hover{background:#0077b6}
 <!-- MENU -->
 <div id="menu" class="hidden container">
 <div class="header">
-<h2 style="color:#0077b6;">CDEJEPH</h2>
-<img src="logo.png" class="logo">
+<img src="logo.png" alt="Logo" class="logo">
+<h2 style="color:#0077b6;margin:0;">CDEJEPH</h2>
 </div>
 <div class="content">
 <div class="card">
-<button onclick="show('add')">Ajouter Personne</button>
-<button onclick="show('presence')">Marquer Présence</button>
-<button onclick="show('list')">Voir Présents</button>
-<button onclick="logout()">Déconnexion</button>
+<button onclick="show('add')">➕ Ajouter Personne</button>
+<button onclick="show('manage')">🛠 Gérer les personnes</button>
+<button onclick="show('presence')">✅ Marquer Présence</button>
+<button onclick="show('list')">📋 Voir Présents</button>
+<button onclick="logout()">🚪 Déconnexion</button>
 </div>
 </div>
 </div>
@@ -102,21 +221,38 @@ button:hover{background:#0077b6}
 <!-- AJOUT -->
 <div id="add" class="hidden container">
 <div class="header">
-<h2>Ajouter</h2>
-<img src="logo.png" class="logo">
+<img src="logo.png" alt="Logo" class="logo">
+<h2>Ajouter Personne</h2>
 </div>
 <div class="content">
-<div class="card">
-<input id="nom" placeholder="Nom">
-<input id="prenom" placeholder="Prénom">
+<div class="card" style="max-height:500px; overflow-y:auto;">
+<input id="nom" placeholder="Nom *" required>
+<input id="prenom" placeholder="Prénom *" required>
 <input id="age" placeholder="Age">
 <input id="ecole" placeholder="Ecole">
 <input id="classe" placeholder="Classe">
 <input id="parents" placeholder="Numéro Parents">
-<input id="tg" placeholder="Numéro TG">
+<input id="tg" placeholder="Numéro TG *" required>
 <input id="metier" placeholder="Métier avenir">
-<button onclick="savePerson()">Enregistrer</button>
-<button onclick="back()">Retour</button>
+
+<div class="button-group">
+    <button onclick="savePerson()">💾 Enregistrer</button>
+    <button onclick="back()" style="background:linear-gradient(135deg,#ff9800,#f57c00);">↩️ Retour</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- NOUVELLE SECTION : GÉRER LES PERSONNES -->
+<div id="manage" class="hidden container">
+<div class="header">
+<img src="logo.png" alt="Logo" class="logo">
+<h2>Gérer les personnes</h2>
+</div>
+<div class="content">
+<div class="card">
+<div id="manageList" style="max-height:420px;overflow-y:auto;margin-bottom:20px;"></div>
+<button onclick="back()" style="background:linear-gradient(135deg,#ff9800,#f57c00);">↩️ Retour</button>
 </div>
 </div>
 </div>
@@ -124,157 +260,365 @@ button:hover{background:#0077b6}
 <!-- PRESENCE -->
 <div id="presence" class="hidden container">
 <div class="header">
-<h2>Présence</h2>
-<img src="logo.png" class="logo">
+<img src="logo.png" alt="Logo" class="logo">
+<h2>Marquer Présence</h2>
 </div>
 <div class="content">
 <div class="card">
-<input id="searchNom" placeholder="Recherche Nom">
-<input id="searchTG" placeholder="Recherche Numéro TG">
-<button onclick="markPresence()">Valider Présence</button>
-<button onclick="back()">Retour</button>
+<input id="searchInput" placeholder="Rechercher par Nom ou TG...">
+<button onclick="searchPerson()">🔍 Rechercher</button>
+<div id="personList" style="margin-top:25px;max-height:400px;overflow-y:auto;"></div>
+<button onclick="back()" style="background:linear-gradient(135deg,#ff9800,#f57c00);">↩️ Retour</button>
 </div>
 </div>
 </div>
 
-<!-- LISTE -->
+<!-- LISTE – avec choix de date + PDF -->
 <div id="list" class="hidden container">
 <div class="header">
-<h2>Présents du jour</h2>
-<img src="logo.png" class="logo">
+<img src="logo.png" alt="Logo" class="logo">
+<h2>Présents</h2>
 </div>
 <div class="content">
-<div class="card">
-<div id="result"></div>
-<button onclick="downloadCSV()">Télécharger CSV</button>
-<button onclick="back()">Retour</button>
+<div class="card" style="max-height:500px; overflow-y:auto;">
+<label style="display:block; margin-bottom:8px; color:#0077b6; font-weight:bold;">Date à exporter :</label>
+<input type="date" id="exportDate" class="date-field">
+<div id="result" style="margin:20px 0; max-height:320px; overflow-y:auto;"></div>
+<button onclick="downloadPDF()">📄 Télécharger PDF</button>
+<button onclick="back()" style="background:linear-gradient(135deg,#ff9800,#f57c00);">↩️ Retour</button>
 </div>
 </div>
 </div>
 
 <script>
-
-// 🔥 REMPLACE PAR TES INFOS FIREBASE
+// CONFIG FIREBASE
 var firebaseConfig = {
-apiKey: "AIzaSyCqdm2lbOtt5VOo6OcH2LV0ep3ZcxQiFGs",
-authDomain: "cdej-47315.firebaseapp.com",
-projectId: "cdej-47315"
+    apiKey: "AIzaSyCqdm2lbOtt5VOo6OcH2LV0ep3ZcxQiFGs",
+    authDomain: "cdej-47315.firebaseapp.com",
+    projectId: "cdej-47315"
 };
 
 firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
 
+// REFERENCES
+const loginPage = document.getElementById("login");
+const menu = document.getElementById("menu");
+const add = document.getElementById("add");
+const manage = document.getElementById("manage");
+const presence = document.getElementById("presence");
+const list = document.getElementById("list");
+const personList = document.getElementById("personList");
+const manageList = document.getElementById("manageList");
+const result = document.getElementById("result");
+const exportDate = document.getElementById("exportDate");
+
+const nom = document.getElementById("nom");
+const prenom = document.getElementById("prenom");
+const age = document.getElementById("age");
+const ecole = document.getElementById("ecole");
+const classe = document.getElementById("classe");
+const parents = document.getElementById("parents");
+const tg = document.getElementById("tg");
+const metier = document.getElementById("metier");
+
+const pass = document.getElementById("pass");
+const searchInput = document.getElementById("searchInput");
+
 // LOGIN
 function login(){
-if(document.getElementById("pass").value==="CDEJEPH"){
-document.getElementById("login").classList.add("hidden");
-document.getElementById("menu").classList.remove("hidden");
-}else{
-alert("Mot de passe incorrect");
-}
+    if(pass.value === "CDEJEPH"){
+        loginPage.classList.add("hidden");
+        menu.classList.remove("hidden");
+        pass.value = "";
+    }else{
+        alert("❌ Mot de passe incorrect, réessayer");
+    }
 }
 
 function logout(){
-document.getElementById("menu").classList.add("hidden");
-document.getElementById("login").classList.remove("hidden");
+    menu.classList.add("hidden");
+    loginPage.classList.remove("hidden");
 }
 
 function show(id){
-document.getElementById("menu").classList.add("hidden");
-document.getElementById(id).classList.remove("hidden");
-if(id==="list"){loadToday();}
+    menu.classList.add("hidden");
+    document.getElementById(id).classList.remove("hidden");
+    if(id === "presence"){ loadPersons(); }
+    if(id === "list"){ loadForDate(); }
+    if(id === "manage"){ loadManageList(); }
 }
 
 function back(){
-document.getElementById("add").classList.add("hidden");
-document.getElementById("presence").classList.add("hidden");
-document.getElementById("list").classList.add("hidden");
-document.getElementById("menu").classList.remove("hidden");
+    add.classList.add("hidden");
+    manage.classList.add("hidden");
+    presence.classList.add("hidden");
+    list.classList.add("hidden");
+    menu.classList.remove("hidden");
 }
 
-// AJOUT
+// AJOUT PERSONNE
 function savePerson(){
-db.collection("personnes").add({
-nom:nom.value,
-prenom:prenom.value,
-age:age.value,
-ecole:ecole.value,
-classe:classe.value,
-parents:parents.value,
-tg:tg.value,
-metier:metier.value
-});
-alert("Enregistré");
+    if(!nom.value.trim() || !prenom.value.trim() || !tg.value.trim()){
+        alert("❌ Nom, Prénom et Numéro TG sont obligatoires");
+        return;
+    }
+
+    db.collection("personnes").add({
+        nom: nom.value.trim(),
+        prenom: prenom.value.trim(),
+        age: age.value.trim() || "",
+        ecole: ecole.value.trim() || "",
+        classe: classe.value.trim() || "",
+        parents: parents.value.trim() || "",
+        tg: tg.value.trim(),
+        metier: metier.value.trim() || ""
+    }).then(()=>{
+        alert("✅ Personne enregistrée avec succès !");
+        [nom, prenom, age, ecole, classe, parents, tg, metier].forEach(i => i.value = "");
+    }).catch(error => {
+        alert("❌ Erreur lors de l'enregistrement");
+        console.error(error);
+        
+    });
 }
 
-// PRESENCE
-function markPresence(){
-let nomVal=searchNom.value;
-let tgVal=searchTG.value;
-
-db.collection("personnes")
-.where("nom","==",nomVal)
-.get()
-.then(snapshot=>{
-if(snapshot.empty){
-db.collection("personnes")
-.where("tg","==",tgVal)
-.get()
-.then(snap=>{
-snap.forEach(doc=>savePresence(doc.data()));
-});
-}else{
-snapshot.forEach(doc=>savePresence(doc.data()));
-}
-});
-}
-
-function savePresence(data){
-let now=new Date();
-db.collection("presences").add({
-nom:data.nom+" "+data.prenom,
-date:now.toLocaleDateString(),
-heure:now.toLocaleTimeString()
-});
-alert("Présence enregistrée");
+// CHARGER PERSONNES pour présence
+function loadPersons(){
+    personList.innerHTML = '<p style="text-align:center;color:#666;padding:20px;">Chargement...</p>';
+    db.collection("personnes").get().then(snapshot => {
+        personList.innerHTML = "";
+        if(snapshot.empty){
+            personList.innerHTML = '<p style="text-align:center;color:#666;padding:40px;">Aucune personne enregistrée</p>';
+            return;
+        }
+        snapshot.forEach(doc => {
+            let data = doc.data();
+            personList.innerHTML += `
+            <div class="personItem">
+                <span><strong>${data.nom} ${data.prenom}</strong><br>
+                <small>TG: ${data.tg}</small></span>
+                <button onclick='savePresence("${data.nom}","${data.prenom}","${data.tg}")'
+                style="background:linear-gradient(135deg,#4CAF50,#45a049);padding:10px 20px;">✅ Présence</button>
+            </div>`;
+        });
+    });
 }
 
-// LISTE
-function loadToday(){
-let today=new Date().toLocaleDateString();
-result.innerHTML="";
-db.collection("presences")
-.where("date","==",today)
-.get()
-.then(snapshot=>{
-snapshot.forEach(doc=>{
-let d=doc.data();
-result.innerHTML+=`<p>${d.nom} - ${d.heure}</p>`;
-});
-});
+// RECHERCHE (inchangée)
+function searchPerson(){
+    let value = searchInput.value.toLowerCase().trim();
+    if(value.length < 2){ loadPersons(); return; }
+    personList.innerHTML = '<p style="text-align:center;color:#666;padding:20px;">Recherche...</p>';
+    db.collection("personnes").get().then(snapshot => {
+        personList.innerHTML = "";
+        let found = false;
+        snapshot.forEach(doc => {
+            let data = doc.data();
+            if(data.nom.toLowerCase().includes(value) ||
+               data.prenom.toLowerCase().includes(value) ||
+               data.tg.toLowerCase().includes(value)){
+                personList.innerHTML += `
+                <div class="personItem">
+                    <span><strong>${data.nom} ${data.prenom}</strong><br>
+                    <small>TG: ${data.tg}</small></span>
+                    <button onclick='savePresence("${data.nom}","${data.prenom}","${data.tg}")'
+                    style="background:linear-gradient(135deg,#4CAF50,#45a049);padding:10px 20px;">✅ Présence</button>
+                </div>`;
+                found = true;
+            }
+        });
+        if(!found){
+            personList.innerHTML = '<p style="text-align:center;color:#f44336;padding:40px;">Aucun résultat trouvé</p>';
+        }
+    });
 }
 
-// TELECHARGEMENT
-function downloadCSV(){
-let today=new Date().toLocaleDateString();
-db.collection("presences")
-.where("date","==",today)
-.get()
-.then(snapshot=>{
-let csv="Nom,Heure\n";
-snapshot.forEach(doc=>{
-let d=doc.data();
-csv+=d.nom+","+d.heure+"\n";
-});
-let blob=new Blob([csv],{type:"text/csv"});
-let link=document.createElement("a");
-link.href=URL.createObjectURL(blob);
-link.download="presence_"+today+".csv";
-link.click();
-});
+// ENREGISTRER PRESENCE
+function savePresence(nom, prenom, tg){
+    let now = new Date();
+    let dateStr = now.toLocaleDateString('fr-FR');
+    let heureStr = now.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+    db.collection("presences").add({
+        nom: nom + " " + prenom,
+        tg: tg,
+        date: dateStr,
+        heure: heureStr
+    }).then(() => {
+        alert("✅ Présence enregistrée !");
+        searchPerson();
+    }).catch(err => console.error(err));
 }
 
+// CHARGER LISTE pour la date sélectionnée
+function loadForDate(){
+    let selected = exportDate.value;
+    let dateToUse = selected ? new Date(selected).toLocaleDateString('fr-FR') : new Date().toLocaleDateString('fr-FR');
+
+    result.innerHTML = '<p style="text-align:center;color:#666;padding:20px;">Chargement...</p>';
+
+    db.collection("presences")
+      .where("date", "==", dateToUse)
+      .get()
+      .then(snapshot => {
+        result.innerHTML = "";
+        if(snapshot.empty){
+            result.innerHTML = '<p style="text-align:center;color:#666;font-style:italic;padding:40px;">Aucune présence pour cette date</p>';
+            return;
+        }
+        let count = snapshot.size;
+        let html = `<h3 style="margin-bottom:20px;color:#0077b6;">${count} présent(s) le ${dateToUse}</h3>`;
+        snapshot.forEach(doc => {
+            let d = doc.data();
+            html += `<div class="personItem">
+                <span><strong>${d.nom}</strong><br><small>${d.heure}</small></span>
+            </div>`;
+        });
+        result.innerHTML = html;
+      });
+}
+
+// TELECHARGER PDF
+function downloadPDF(){
+    let selected = exportDate.value;
+    if(!selected){
+        alert("Veuillez sélectionner une date !");
+        return;
+    }
+    let dateObj = new Date(selected);
+    let dateFr = dateObj.toLocaleDateString('fr-FR');
+
+    db.collection("presences")
+      .where("date", "==", dateFr)
+      .get()
+      .then(snapshot => {
+        if(snapshot.empty){
+            alert("Aucune présence pour cette date.");
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.setFontSize(16);
+        doc.text(`Présences CDEJEPH - ${dateFr}`, 15, 20);
+
+        let tableData = [];
+        snapshot.forEach(doc => {
+            let d = doc.data();
+            tableData.push([
+                d.tg || "—",
+                d.heure || "—",
+                d.nom || "—"
+            ]);
+        });
+
+        doc.autoTable({
+            head: [['Num TG', 'Heure', 'Nom et Prénoms']],
+            body: tableData,
+            startY: 30,
+            theme: 'grid',
+            headStyles: { fillColor: [135, 206, 235], textColor: 0, fontStyle: 'bold' },
+            styles: { fontSize: 10, cellPadding: 5, overflow: 'linebreak' },
+            columnStyles: {
+                0: { cellWidth: 40 },
+                1: { cellWidth: 40 },
+                2: { cellWidth: 100 }
+            }
+        });
+
+        doc.save(`presence_${dateFr.replace(/\//g, '-')}.pdf`);
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Erreur lors de la génération du PDF");
+      });
+}
+
+// ────────────────────────────────
+// NOUVEAU : Gestion (modifier / supprimer)
+// ────────────────────────────────
+function loadManageList() {
+    manageList.innerHTML = '<p style="text-align:center;color:#666;padding:20px;">Chargement...</p>';
+    
+    db.collection("personnes").orderBy("nom").get().then(snapshot => {
+        manageList.innerHTML = "";
+        if (snapshot.empty) {
+            manageList.innerHTML = '<p style="text-align:center;color:#666;padding:40px;">Aucune personne enregistrée</p>';
+            return;
+        }
+        snapshot.forEach(doc => {
+            let data = doc.data();
+            let id = doc.id;
+            manageList.innerHTML += `
+            <div class="personItem">
+                <span><strong>${data.nom} ${data.prenom}</strong><br>
+                <small>TG: ${data.tg} • ${data.age || ''} ans • ${data.ecole || ''}</small></span>
+                <div style="display:flex;gap:10px;">
+                    <button class="edit-btn" onclick="editPerson('${id}', '${escape(data.nom)}', '${escape(data.prenom)}', '${escape(data.age||'')}', '${escape(data.ecole||'')}', '${escape(data.classe||'')}', '${escape(data.parents||'')}', '${escape(data.tg)}', '${escape(data.metier||'')}')">Modifier</button>
+                    <button class="delete-btn" onclick="deletePerson('${id}', '${escape(data.nom + ' ' + data.prenom)}')">Supprimer</button>
+                </div>
+            </div>`;
+        });
+    }).catch(err => {
+        manageList.innerHTML = '<p style="color:red;text-align:center;">Erreur de chargement</p>';
+        console.error(err);
+    });
+}
+
+function escape(str) {
+    return str.replace(/'/g, "\\'");
+}
+
+function editPerson(id, nom, prenom, age, ecole, classe, parents, tg, metier) {
+    const newNom    = prompt("Nom :", nom)     || nom;
+    const newPrenom = prompt("Prénom :", prenom)  || prenom;
+    const newAge    = prompt("Age :", age)     || age;
+    const newEcole  = prompt("Ecole :", ecole)   || ecole;
+    const newClasse = prompt("Classe :", classe)  || classe;
+    const newParents= prompt("Num Parents :", parents)|| parents;
+    const newTg     = prompt("Num TG :", tg)      || tg;
+    const newMetier = prompt("Métier avenir :", metier)|| metier;
+
+    if (!newNom.trim() || !newPrenom.trim() || !newTg.trim()) {
+        alert("Nom, Prénom et TG sont obligatoires !");
+        return;
+    }
+
+    db.collection("personnes").doc(id).update({
+        nom: newNom.trim(),
+        prenom: newPrenom.trim(),
+        age: newAge.trim(),
+        ecole: newEcole.trim(),
+        classe: newClasse.trim(),
+        parents: newParents.trim(),
+        tg: newTg.trim(),
+        metier: newMetier.trim()
+    }).then(() => {
+        alert("✅ Modifications enregistrées");
+        loadManageList();
+    }).catch(err => {
+        alert("Erreur lors de la modification");
+        console.error(err);
+    });
+}
+
+function deletePerson(id, fullName) {
+    if (!confirm(`Supprimer définitivement ${fullName} ?`)) return;
+
+    db.collection("personnes").doc(id).delete()
+    .then(() => {
+        alert("Personne supprimée");
+        loadManageList();
+    })
+    .catch(err => {
+        alert("Erreur lors de la suppression");
+        console.error(err);
+    });
+}
+
+// Initialisation date par défaut = aujourd'hui
+exportDate.valueAsDate = new Date();
 </script>
-
 </body>
 </html>
