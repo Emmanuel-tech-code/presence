@@ -436,19 +436,40 @@ function searchPerson(){
 
 // ENREGISTRER PRESENCE
 function savePresence(nom, prenom, tg){
+
     let now = new Date();
     let dateStr = now.toLocaleDateString('fr-FR');
     let heureStr = now.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
-    db.collection("presences").add({
-        nom: nom + " " + prenom,
-        tg: tg,
-        date: dateStr,
-        heure: heureStr
-    }).then(() => {
-        alert("✅ Présence enregistrée !");
-        searchPerson();
-    }).catch(err => console.error(err));
+
+    // 🔎 Vérifier si la personne est déjà présente aujourd’hui
+    db.collection("presences")
+      .where("tg", "==", tg)
+      .where("date", "==", dateStr)
+      .get()
+      .then(snapshot => {
+
+        if(!snapshot.empty){
+            alert("⚠️ Cette personne est déjà marquée présente aujourd’hui !");
+            return;
+        }
+
+        // ✅ Sinon on enregistre
+        db.collection("presences").add({
+            nom: nom + " " + prenom,
+            tg: tg,
+            date: dateStr,
+            heure: heureStr
+        }).then(() => {
+            alert("✅ Présence enregistrée !");
+            loadPersons(); // Recharge la liste
+        });
+
+      })
+      .catch(error => {
+          console.error(error);
+      });
 }
+
 
 // CHARGER LISTE pour la date sélectionnée
 function loadForDate(){
