@@ -399,28 +399,6 @@ function savePerson(){
         alert("Erreur lors de l'enregistrement");
     });
 }
-
-
-    db.collection("personnes").add({
-        nom: nom.value.trim(),
-        prenom: prenom.value.trim(),
-        age: age.value.trim() || "",
-        ecole: ecole.value.trim() || "",
-        classe: classe.value.trim() || "",
-        parents: parents.value.trim() || "",
-        enfants: enfants.value.trim() || "",
-        tg: tg.value.trim(),
-        metier: metier.value.trim() || ""
-    }).then(()=>{
-        alert("✅ Personne enregistrée avec succès !");
-        [nom, prenom, age, ecole, classe, parents,enfants, tg, metier].forEach(i => i.value = "");
-    }).catch(error => {
-        alert(" Erreur lors de l'enregistrement");
-        console.error(error);
-        
-    });
-}
-
 // CHARGER PERSONNES pour présence
 function loadPersons(){
     personList.innerHTML = '<p style="text-align:center;color:#666;padding:20px;">Chargement...</p>';
@@ -652,7 +630,7 @@ function editPerson(id, nom, prenom, age, ecole, classe, parents, enfants, tg, m
         ecole: newEcole.trim(),
         classe: newClasse.trim(),
         parents: newParents.trim(),
-         parents: newenfants.trim(),
+         enfants: newenfants.trim(),
         tg: newTg.trim(),
         metier: newMetier.trim()
     }).then(() => {
@@ -683,6 +661,7 @@ exportDate.valueAsDate = new Date();
 </script>
 </body>
 </html>
+
 
 
 
