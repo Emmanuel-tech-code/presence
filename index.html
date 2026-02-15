@@ -264,7 +264,7 @@ box-shadow:0 25px 60px rgba(135,206,235,0.7);
 <div class="content">
 <div class="card" style="max-height:500px; overflow-y:auto;">
 <input id="searchInput" placeholder="Rechercher par Nom ou TG...">
-<button onclick="searchPerson()">🔍 Rechercher</button>
+<button onclick="searchPerson()">Rechercher</button>
 <div id="personList" style="margin-top:25px;max-height:400px;overflow-y:auto;"></div>
 <button onclick="back()" style="background:linear-gradient(135deg,#ff9800,#f57c00);">↩️ Retour</button>
 </div>
@@ -317,6 +317,7 @@ const age = document.getElementById("age");
 const ecole = document.getElementById("ecole");
 const classe = document.getElementById("classe");
 const parents = document.getElementById("parents");
+const enfants = document.getElementById("enfants");    
 const tg = document.getElementById("tg");
 const metier = document.getElementById("metier");
 
@@ -330,7 +331,7 @@ function login(){
         menu.classList.remove("hidden");
         pass.value = "";
     }else{
-        alert("❌ Mot de passe incorrect, réessayer");
+        alert("Mot de passe incorrect, réessayer");
     }
 }
 
@@ -359,7 +360,7 @@ function back(){
 function savePerson(){
 
     if(!nom.value.trim() || !prenom.value.trim() || !tg.value.trim()){
-        alert("❌ Nom, Prénom et Numéro TG sont obligatoires");
+        alert("Nom, Prénom et Numéro TG sont obligatoires");
         return;
     }
 
@@ -383,7 +384,7 @@ function savePerson(){
             ecole: ecole.value.trim() || "",
             classe: classe.value.trim() || "",
             parents: parents.value.trim() || "",
-            enfantss: enfants.value.trim() || "",
+            enfants: enfants.value.trim() || "",
             tg: tgValue,
             metier: metier.value.trim() || ""
         }).then(()=>{
@@ -681,5 +682,6 @@ exportDate.valueAsDate = new Date();
 </script>
 </body>
 </html>
+
 
 
