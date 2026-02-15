@@ -15,9 +15,7 @@
 body{
 height:100vh;
 background:linear-gradient(135deg,#87CEEB,#E0F7FA,#ffffff);
-display:flex;
-justify-content:center;
-align-items:center;
+margin:0;
 overflow:hidden;
 position:relative;
 }
@@ -66,11 +64,11 @@ align-items:center;
 padding:20px;
 }
 .card{
-background:linear-gradient(145deg,#ffffff, #f8f9ff);
+background: transparent;
 width:100%;
-max-width:500px;
+max-width:none;
 padding:40px;
-border-radius:25px;
+border-radius:0px;
 box-shadow:0 20px 60px rgba(135,206,235,0.4), 0 0 0 1px rgba(255,255,255,0.5);
 backdrop-filter:blur(20px);
 transition:all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
@@ -643,3 +641,4 @@ exportDate.valueAsDate = new Date();
 </script>
 </body>
 </html>
+
