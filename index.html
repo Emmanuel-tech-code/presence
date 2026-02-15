@@ -207,11 +207,11 @@ box-shadow:0 25px 60px rgba(135,206,235,0.7);
 </div>
 <div class="content">
 <div class="card">
-<button onclick="show('add')">➕ Ajouter Personne</button>
-<button onclick="show('manage')">🛠 Gérer les personnes</button>
-<button onclick="show('presence')">✅ Marquer Présence</button>
-<button onclick="show('list')">📋 Voir Présents</button>
-<button onclick="logout()">🚪 Déconnexion</button>
+<button onclick="show('add')">Ajouter Personne</button>
+<button onclick="show('manage')">Gérer les personnes</button>
+<button onclick="show('presence')">Marquer Présence</button>
+<button onclick="show('list')">Voir Présents</button>
+<button onclick="logout()">Déconnexion</button>
 </div>
 </div>
 </div>
@@ -234,8 +234,8 @@ box-shadow:0 25px 60px rgba(135,206,235,0.7);
 <input id="metier" placeholder="Métier avenir">
 
 <div class="button-group">
-    <button onclick="savePerson()">💾 Enregistrer</button>
-    <button onclick="back()" style="background:linear-gradient(135deg,#ff9800,#f57c00);">↩️ Retour</button>
+    <button onclick="savePerson()">Enregistrer</button>
+    <button onclick="back()" style="background:linear-gradient(135deg,#ff9800,#f57c00);">Retour</button>
 </div>
 </div>
 </div>
@@ -325,7 +325,7 @@ const searchInput = document.getElementById("searchInput");
 
 // LOGIN
 function login(){
-    if(pass.value === "CDEJEPH"){
+    if(pass.value === "CDEJ@EPH12"){
         loginPage.classList.add("hidden");
         menu.classList.remove("hidden");
         pass.value = "";
@@ -357,10 +357,47 @@ function back(){
 
 // AJOUT PERSONNE
 function savePerson(){
+
     if(!nom.value.trim() || !prenom.value.trim() || !tg.value.trim()){
         alert("❌ Nom, Prénom et Numéro TG sont obligatoires");
         return;
     }
+
+    let tgValue = tg.value.trim();
+
+    let docRef = db.collection("personnes").doc(tgValue);
+
+    // 🔎 Vérifier si le TG existe déjà
+    docRef.get().then((doc)=>{
+        
+        if(doc.exists){
+            alert("⚠️ Cette personne est déjà enregistrée !");
+            return;
+        }
+
+        // ✅ On enregistre avec TG comme ID
+        docRef.set({
+            nom: nom.value.trim(),
+            prenom: prenom.value.trim(),
+            age: age.value.trim() || "",
+            ecole: ecole.value.trim() || "",
+            classe: classe.value.trim() || "",
+            parents: parents.value.trim() || "",
+            enfantss: enfants.value.trim() || "",
+            tg: tgValue,
+            metier: metier.value.trim() || ""
+        }).then(()=>{
+            alert("Personne enregistrée avec succès !");
+            [nom, prenom, age, ecole, classe, parents, enfants, tg, metier]
+            .forEach(i => i.value = "");
+        });
+
+    }).catch((error)=>{
+        console.error(error);
+        alert("Erreur lors de l'enregistrement");
+    });
+}
+
 
     db.collection("personnes").add({
         nom: nom.value.trim(),
@@ -369,13 +406,14 @@ function savePerson(){
         ecole: ecole.value.trim() || "",
         classe: classe.value.trim() || "",
         parents: parents.value.trim() || "",
+        enfants: enfants.value.trim() || "",
         tg: tg.value.trim(),
         metier: metier.value.trim() || ""
     }).then(()=>{
         alert("✅ Personne enregistrée avec succès !");
-        [nom, prenom, age, ecole, classe, parents, tg, metier].forEach(i => i.value = "");
+        [nom, prenom, age, ecole, classe, parents,enfants, tg, metier].forEach(i => i.value = "");
     }).catch(error => {
-        alert("❌ Erreur lors de l'enregistrement");
+        alert(" Erreur lors de l'enregistrement");
         console.error(error);
         
     });
@@ -397,7 +435,7 @@ function loadPersons(){
                 <span><strong>${data.nom} ${data.prenom}</strong><br>
                 <small>TG: ${data.tg}</small></span>
                 <button onclick='savePresence("${data.nom}","${data.prenom}","${data.tg}")'
-                style="background:linear-gradient(135deg,#4CAF50,#45a049);padding:10px 20px;">✅ Présence</button>
+                style="background:linear-gradient(135deg,#4CAF50,#45a049);padding:10px 20px;">✅</button>
             </div>`;
         });
     });
@@ -421,7 +459,7 @@ function searchPerson(){
                     <span><strong>${data.nom} ${data.prenom}</strong><br>
                     <small>TG: ${data.tg}</small></span>
                     <button onclick='savePresence("${data.nom}","${data.prenom}","${data.tg}")'
-                    style="background:linear-gradient(135deg,#4CAF50,#45a049);padding:10px 20px;">✅ Présence</button>
+                    style="background:linear-gradient(135deg,#4CAF50,#45a049);padding:10px 20px;">✅</button>
                 </div>`;
                 found = true;
             }
@@ -447,7 +485,7 @@ function savePresence(nom, prenom, tg){
       .then(snapshot => {
 
         if(!snapshot.empty){
-            alert("⚠️ Cette personne est déjà marquée présente aujourd’hui !");
+            alert("Cette personne est déjà marquée présente aujourd’hui !");
             return;
         }
 
@@ -458,7 +496,7 @@ function savePresence(nom, prenom, tg){
             date: dateStr,
             heure: heureStr
         }).then(() => {
-            alert("✅ Présence enregistrée !");
+            alert("Présence enregistrée !");
             loadPersons(); // Recharge la liste
         });
 
@@ -589,13 +627,14 @@ function escape(str) {
     return str.replace(/'/g, "\\'");
 }
 
-function editPerson(id, nom, prenom, age, ecole, classe, parents, tg, metier) {
+function editPerson(id, nom, prenom, age, ecole, classe, parents, enfants, tg, metier) {
     const newNom    = prompt("Nom :", nom)     || nom;
     const newPrenom = prompt("Prénom :", prenom)  || prenom;
     const newAge    = prompt("Age :", age)     || age;
     const newEcole  = prompt("Ecole :", ecole)   || ecole;
     const newClasse = prompt("Classe :", classe)  || classe;
     const newParents= prompt("Num Parents :", parents)|| parents;
+    const newenfants= prompt("Num secondaire :", enfants)|| enfants;
     const newTg     = prompt("Num TG :", tg)      || tg;
     const newMetier = prompt("Métier avenir :", metier)|| metier;
 
@@ -611,10 +650,11 @@ function editPerson(id, nom, prenom, age, ecole, classe, parents, tg, metier) {
         ecole: newEcole.trim(),
         classe: newClasse.trim(),
         parents: newParents.trim(),
+         parents: newenfants.trim(),
         tg: newTg.trim(),
         metier: newMetier.trim()
     }).then(() => {
-        alert("✅ Modifications enregistrées");
+        alert("Modifications enregistrées");
         loadManageList();
     }).catch(err => {
         alert("Erreur lors de la modification");
@@ -641,4 +681,5 @@ exportDate.valueAsDate = new Date();
 </script>
 </body>
 </html>
+
 
