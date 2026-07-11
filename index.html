@@ -463,16 +463,30 @@ function loadForDate(){
 function downloadPDF(){
   let sel=$('exportDate').value;if(!sel){alert("Selectionnez une date !");return}
   let dateFr=new Date(sel).toLocaleDateString('fr-FR');
-  db.collection("presences").where("date","==",dateFr).get().then(s=>{
+  Promise.all([
+    db.collection("presences").where("date","==",dateFr).get(),
+    db.collection("personnes").get()
+  ]).then(([s,ps])=>{
     if(s.empty){alert("Aucune presence pour cette date.");return}
+    let parentsByTg={};
+    ps.forEach(d=>{let r=d.data();parentsByTg[r.tg]=r.parents||'—'});
     const {jsPDF}=window.jspdf;const doc=new jsPDF();
-    doc.setFontSize(15);doc.text(`Presences CDEJ EPHPHATHA — ${dateFr}`,15,20);
-    let data=[];s.forEach(d=>{let r=d.data();data.push([r.tg||'—',r.heure||'—',r.nom||'—'])});
-    doc.autoTable({head:[['Num TG','Heure','Nom et Prenoms']],body:data,startY:28,theme:'grid',headStyles:{fillColor:[11,43,94],textColor:255,fontStyle:'bold'},styles:{fontSize:10,cellPadding:5},columnStyles:{0:{cellWidth:40},1:{cellWidth:40},2:{cellWidth:100}}});
+    doc.setFontSize(13);doc.text(`Presences CDEJ EPHPHATHA — ${dateFr}`,10,14);
+    let data=[];let i=1;
+    s.forEach(doc2=>{let r=doc2.data();data.push([i++,r.tg||'—',r.nom||'—',parentsByTg[r.tg]||'—',r.heure||'—'])});
+    doc.autoTable({
+      head:[['N°','Num TG','Nom et Prenoms','Tel. Parents','Heure']],
+      body:data,
+      startY:20,
+      theme:'grid',
+      headStyles:{fillColor:[11,43,94],textColor:255,fontStyle:'bold',fontSize:9},
+      styles:{fontSize:8,cellPadding:2},
+      columnStyles:{0:{cellWidth:10},1:{cellWidth:28},2:{cellWidth:63},3:{cellWidth:38},4:{cellWidth:22}},
+      margin:{left:10,right:10}
+    });
     doc.save(`presence_${dateFr.replace(/\//g,'-')}.pdf`);
   });
 }
-
 // IRREGULIERS
 function getSaturdays(){
   let sats=[],cur=new Date(),lim=new Date();lim.setFullYear(lim.getFullYear()-1);
