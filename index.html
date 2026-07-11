@@ -487,6 +487,7 @@ function downloadPDF(){
     doc.save(`presence_${dateFr.replace(/\//g,'-')}.pdf`);
   });
 }
+
 // IRREGULIERS
 function getSaturdays(){
   let sats=[],cur=new Date(),lim=new Date();lim.setFullYear(lim.getFullYear()-1);
